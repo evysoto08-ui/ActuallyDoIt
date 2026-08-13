@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchPageContent } from "@/lib/fetchPageContent";
-import { extractRecipe } from "@/lib/extractRecipe";
+import { extractContent } from "@/lib/extractContent";
 
 export async function POST(request: NextRequest) {
   let url: unknown;
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const page = await fetchPageContent(parsedUrl.toString());
-    const recipe = await extractRecipe(page);
-    return NextResponse.json({ recipe });
+    const content = await extractContent(page);
+    return NextResponse.json({ content });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Something went wrong.";
     return NextResponse.json({ error: message }, { status: 502 });
