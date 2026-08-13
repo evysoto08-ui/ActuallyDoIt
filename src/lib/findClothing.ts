@@ -89,11 +89,14 @@ export async function findClothing(body: BodyInfo, request: string): Promise<Clo
   const sizingGuidance =
     " When height and/or weight are given, use them alongside the body shape to suggest a likely starting size from the retailer's own size chart where you can find one, and mention it in the fit reasoning — but always caveat that they should double-check against the specific brand's chart, since sizing varies a lot between retailers.";
 
+  const efficiencyGuidance =
+    " You have a limited number of web searches, so use them efficiently: search for whole categories or collections (e.g. a retailer's 'dark wash straight leg jeans' listing page) rather than one narrow query per tiny detail, and stop as soon as you have enough real, verified items rather than spending extra searches double-checking prices.";
+
   const system = (
     hasSpecificRequest
       ? "You are a personal shopper. Use web search to find real, currently available clothing items that match what the person is shopping for and that suit their body shape well. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing."
       : "You are a personal shopper. The person hasn't asked for a specific item — instead, use web search to put together a small, varied set of real, currently available pieces (e.g. a top, a bottom, and one layering or statement piece) that are well suited to their body shape. Pick genuinely different categories rather than several near-duplicates. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing."
-  ) + sizingGuidance;
+  ) + sizingGuidance + efficiencyGuidance;
 
   const response = await getClient().messages.create({
     model: "claude-opus-5",
@@ -107,7 +110,7 @@ export async function findClothing(body: BodyInfo, request: string): Promise<Clo
     ],
     output_config: {
       format: { type: "json_schema", schema: CLOTHING_SCHEMA },
-      effort: "medium",
+      effort: "low",
     },
     system,
     messages: [
