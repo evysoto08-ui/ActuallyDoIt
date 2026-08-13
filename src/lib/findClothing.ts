@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export interface BodyInfo {
   height: string;
+  weight: string;
   bodyShape: string;
   fitPreference: string;
 }
@@ -76,6 +77,7 @@ function getClient(): Anthropic {
 export async function findClothing(body: BodyInfo, request: string): Promise<ClothingSearchResult> {
   const bodyDescription = [
     body.height && `Height: ${body.height}`,
+    body.weight && `Weight: ${body.weight}`,
     body.bodyShape && `Body shape: ${body.bodyShape}`,
     body.fitPreference && `Fit preference: ${body.fitPreference}`,
   ]
@@ -84,9 +86,14 @@ export async function findClothing(body: BodyInfo, request: string): Promise<Clo
 
   const hasSpecificRequest = request.trim().length > 0;
 
-  const system = hasSpecificRequest
-    ? "You are a personal shopper. Use web search to find real, currently available clothing items that match what the person is shopping for and that suit their body shape well. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing."
-    : "You are a personal shopper. The person hasn't asked for a specific item — instead, use web search to put together a small, varied set of real, currently available pieces (e.g. a top, a bottom, and one layering or statement piece) that are well suited to their body shape. Pick genuinely different categories rather than several near-duplicates. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing.";
+  const sizingGuidance =
+    " When height and/or weight are given, use them alongside the body shape to suggest a likely starting size from the retailer's own size chart where you can find one, and mention it in the fit reasoning — but always caveat that they should double-check against the specific brand's chart, since sizing varies a lot between retailers.";
+
+  const system = (
+    hasSpecificRequest
+      ? "You are a personal shopper. Use web search to find real, currently available clothing items that match what the person is shopping for and that suit their body shape well. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing."
+      : "You are a personal shopper. The person hasn't asked for a specific item — instead, use web search to put together a small, varied set of real, currently available pieces (e.g. a top, a bottom, and one layering or statement piece) that are well suited to their body shape. Pick genuinely different categories rather than several near-duplicates. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing."
+  ) + sizingGuidance;
 
   const response = await getClient().messages.create({
     model: "claude-opus-5",

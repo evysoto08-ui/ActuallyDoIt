@@ -17,12 +17,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const { request: shoppingRequest, height, bodyShape, fitPreference } = body as Record<string, unknown>;
+  const { request: shoppingRequest, height, weight, bodyShape, fitPreference } = body as Record<string, unknown>;
 
   const requestText = typeof shoppingRequest === "string" ? shoppingRequest.trim() : "";
 
   const bodyInfo: BodyInfo = {
     height: typeof height === "string" ? height.trim() : "",
+    weight: typeof weight === "string" ? weight.trim() : "",
     bodyShape: typeof bodyShape === "string" ? bodyShape.trim() : "",
     fitPreference: typeof fitPreference === "string" ? fitPreference.trim() : "",
   };
@@ -30,9 +31,9 @@ export async function POST(request: NextRequest) {
   // The request text is optional (leave it blank for general suggestions), but
   // there needs to be *something* to go on — at least a specific item, or some
   // body info to build general suggestions around.
-  if (!requestText && !bodyInfo.height && !bodyInfo.bodyShape) {
+  if (!requestText && !bodyInfo.height && !bodyInfo.weight && !bodyInfo.bodyShape) {
     return NextResponse.json(
-      { error: "Please describe what you're shopping for, or fill in your height/body shape." },
+      { error: "Please describe what you're shopping for, or fill in your height/weight/body shape." },
       { status: 400 },
     );
   }

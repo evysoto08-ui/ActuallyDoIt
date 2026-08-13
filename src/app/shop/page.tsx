@@ -32,6 +32,7 @@ interface ShopResult {
 
 export default function ShopPage() {
   const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
   const [bodyShape, setBodyShape] = useState(BODY_SHAPES[0]);
   const [fitPreference, setFitPreference] = useState(FIT_PREFERENCES[0]);
   const [request, setRequest] = useState("");
@@ -49,11 +50,13 @@ export default function ShopPage() {
       if (!saved) return;
       const parsed = JSON.parse(saved) as {
         height?: string;
+        weight?: string;
         bodyShape?: string;
         fitPreference?: string;
       };
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from localStorage on mount
       setHeight(parsed.height ?? "");
+      setWeight(parsed.weight ?? "");
       setBodyShape(parsed.bodyShape || BODY_SHAPES[0]);
       setFitPreference(parsed.fitPreference || FIT_PREFERENCES[0]);
     } catch {
@@ -62,7 +65,7 @@ export default function ShopPage() {
   }, []);
 
   const hasBodyShape = bodyShape !== BODY_SHAPES[0];
-  const canSubmit = Boolean(request.trim() || height.trim() || hasBodyShape);
+  const canSubmit = Boolean(request.trim() || height.trim() || weight.trim() || hasBodyShape);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -71,7 +74,7 @@ export default function ShopPage() {
     try {
       localStorage.setItem(
         BODY_INFO_STORAGE_KEY,
-        JSON.stringify({ height, bodyShape, fitPreference }),
+        JSON.stringify({ height, weight, bodyShape, fitPreference }),
       );
     } catch {
       // Non-critical — proceed even if saving fails.
@@ -87,6 +90,7 @@ export default function ShopPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           height,
+          weight,
           bodyShape: bodyShape === BODY_SHAPES[0] ? "" : bodyShape,
           fitPreference: fitPreference === FIT_PREFERENCES[0] ? "" : fitPreference,
           request: request.trim(),
@@ -117,7 +121,7 @@ export default function ShopPage() {
         </header>
 
         <form onSubmit={handleSubmit} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div>
               <label className="block text-sm font-medium text-neutral-700" htmlFor="height">
                 Height <span className="text-neutral-400">(optional)</span>
@@ -128,6 +132,20 @@ export default function ShopPage() {
                 value={height}
                 onChange={(e) => setHeight(e.target.value)}
                 placeholder={'e.g. 5\'6"'}
+                className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-700" htmlFor="weight">
+                Weight <span className="text-neutral-400">(optional)</span>
+              </label>
+              <input
+                id="weight"
+                type="text"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="e.g. 150 lbs"
                 className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900"
               />
             </div>
@@ -192,7 +210,7 @@ export default function ShopPage() {
           </button>
 
           <p className="mt-3 text-xs text-neutral-400">
-            Your height, shape, and fit preference are saved only in this browser, so you don&apos;t
+            Your height, weight, shape, and fit preference are saved only in this browser, so you don&apos;t
             need to retype them next time. Nothing is ever purchased automatically.
           </p>
         </form>
