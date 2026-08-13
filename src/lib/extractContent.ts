@@ -43,7 +43,7 @@ const CONTENT_SCHEMA = {
     details: {
       type: "array",
       description:
-        "Key facts as label/value pairs. For a recipe: each ingredient, with label = quantity (e.g. '2 cups') and value = the ingredient name. For an activity: practical facts like Location, Cost, Best time to go, What to bring, Hours, or How to book — label is the fact's name, value is the answer. Only include facts actually present or clearly implied on the page.",
+        "Key facts as label/value pairs — ALWAYS one array entry per fact, never combine multiple facts into a single entry's value. For a recipe: one entry per ingredient, with label = quantity (e.g. '2 cups') and value = the ingredient name (e.g. a recipe with 4 ingredients must produce 4 separate entries, not one entry listing all 4). For an activity: one entry per practical fact — Location, Cost, Best time to go, What to bring, Hours, How to book, etc. — label is the fact's name, value is the answer. Only include facts actually present or clearly implied on the page.",
       items: {
         type: "object",
         properties: {
