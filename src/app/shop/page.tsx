@@ -61,9 +61,12 @@ export default function ShopPage() {
     }
   }, []);
 
+  const hasBodyShape = bodyShape !== BODY_SHAPES[0];
+  const canSubmit = Boolean(request.trim() || height.trim() || hasBodyShape);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!request.trim() || loading) return;
+    if (!canSubmit || loading) return;
 
     try {
       localStorage.setItem(
@@ -168,14 +171,13 @@ export default function ShopPage() {
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-neutral-700" htmlFor="request">
-              What are you shopping for?
+              What are you shopping for? <span className="text-neutral-400">(optional)</span>
             </label>
             <textarea
               id="request"
-              required
               value={request}
               onChange={(e) => setRequest(e.target.value)}
-              placeholder="e.g. black work pants, a dress for a summer wedding, a warm winter coat"
+              placeholder="e.g. black work pants, a dress for a summer wedding — or leave blank for general suggestions based on your shape"
               rows={3}
               className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900"
             />
@@ -183,10 +185,10 @@ export default function ShopPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !canSubmit}
             className="mt-5 w-full rounded-lg bg-neutral-900 px-6 py-3 font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
-            {loading ? "Searching…" : "Find items"}
+            {loading ? "Searching…" : request.trim() ? "Find items" : "Suggest items for me"}
           </button>
 
           <p className="mt-3 text-xs text-neutral-400">

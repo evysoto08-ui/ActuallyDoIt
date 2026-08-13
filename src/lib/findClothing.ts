@@ -82,6 +82,12 @@ export async function findClothing(body: BodyInfo, request: string): Promise<Clo
     .filter(Boolean)
     .join("\n");
 
+  const hasSpecificRequest = request.trim().length > 0;
+
+  const system = hasSpecificRequest
+    ? "You are a personal shopper. Use web search to find real, currently available clothing items that match what the person is shopping for and that suit their body shape well. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing."
+    : "You are a personal shopper. The person hasn't asked for a specific item — instead, use web search to put together a small, varied set of real, currently available pieces (e.g. a top, a bottom, and one layering or statement piece) that are well suited to their body shape. Pick genuinely different categories rather than several near-duplicates. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing.";
+
   const response = await getClient().messages.create({
     model: "claude-opus-5",
     max_tokens: 4096,
@@ -96,8 +102,7 @@ export async function findClothing(body: BodyInfo, request: string): Promise<Clo
       format: { type: "json_schema", schema: CLOTHING_SCHEMA },
       effort: "medium",
     },
-    system:
-      "You are a personal shopper. Use web search to find real, currently available clothing items that match what the person is shopping for and that suit their body shape well. Only recommend items you actually found via search — never invent products, prices, or links. Prefer items from real, well-known retailers. Explain fit reasoning in terms of real cut/fabric/silhouette details from what you found, not generic platitudes. If search turns up nothing suitable, say so honestly rather than guessing.",
+    system,
     messages: [
       {
         role: "user",
@@ -105,7 +110,9 @@ export async function findClothing(body: BodyInfo, request: string): Promise<Clo
           "Here's what I know about my body:",
           bodyDescription || "(no details given)",
           "",
-          `What I'm shopping for: ${request}`,
+          hasSpecificRequest
+            ? `What I'm shopping for: ${request}`
+            : "What I'm shopping for: no specific item — suggest a few versatile pieces that would suit me.",
         ].join("\n"),
       },
     ],

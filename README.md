@@ -13,7 +13,7 @@ Paste a link to a saved post (a recipe blog, a travel/things-to-do post, or a pu
 
 ### Shop for me
 
-Enter your height, body shape, and fit preference (saved in your browser so you don't retype it), describe what you're shopping for, and Claude searches the real web for currently available clothing items that suit your shape, with links and an explanation of why each one fits. Nothing is ever purchased automatically — it's a shortlist for you to review and buy yourself.
+Enter your height, body shape, and fit preference (saved in your browser so you don't retype it), then either describe what you're shopping for or leave that blank for general suggestions, and Claude searches the real web for currently available clothing items that suit your shape, with links and an explanation of why each one fits. Nothing is ever purchased automatically — it's a shortlist for you to review and buy yourself.
 
 This is still an early, bare-bones version: no login, nothing saved to a database.
 

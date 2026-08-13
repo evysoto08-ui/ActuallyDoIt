@@ -19,12 +19,7 @@ export async function POST(request: NextRequest) {
 
   const { request: shoppingRequest, height, bodyShape, fitPreference } = body as Record<string, unknown>;
 
-  if (typeof shoppingRequest !== "string" || shoppingRequest.trim().length === 0) {
-    return NextResponse.json(
-      { error: "Please describe what you're shopping for." },
-      { status: 400 },
-    );
-  }
+  const requestText = typeof shoppingRequest === "string" ? shoppingRequest.trim() : "";
 
   const bodyInfo: BodyInfo = {
     height: typeof height === "string" ? height.trim() : "",
@@ -32,8 +27,18 @@ export async function POST(request: NextRequest) {
     fitPreference: typeof fitPreference === "string" ? fitPreference.trim() : "",
   };
 
+  // The request text is optional (leave it blank for general suggestions), but
+  // there needs to be *something* to go on — at least a specific item, or some
+  // body info to build general suggestions around.
+  if (!requestText && !bodyInfo.height && !bodyInfo.bodyShape) {
+    return NextResponse.json(
+      { error: "Please describe what you're shopping for, or fill in your height/body shape." },
+      { status: 400 },
+    );
+  }
+
   try {
-    const result = await findClothing(bodyInfo, shoppingRequest.trim());
+    const result = await findClothing(bodyInfo, requestText);
     return NextResponse.json({ result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Something went wrong.";
