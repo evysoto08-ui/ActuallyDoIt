@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { getGeminiClient, GEMINI_MODEL } from "./geminiClient";
 import type { PageContent } from "./fetchPageContent";
 
 export type ContentType = "recipe" | "activity";
@@ -70,49 +70,38 @@ const CONTENT_SCHEMA = {
   additionalProperties: false,
 } as const;
 
-let client: Anthropic | null = null;
-function getClient(): Anthropic {
-  if (!client) {
-    client = new Anthropic();
-  }
-  return client;
-}
-
 export async function extractContent(page: PageContent): Promise<ContentExtraction> {
-  const response = await getClient().messages.create({
-    model: "claude-opus-5",
-    max_tokens: 4096,
-    output_config: {
-      format: { type: "json_schema", schema: CONTENT_SCHEMA },
+  const systemInstruction = [
+    "You turn a saved social media post or blog page into an actionable plan.",
+    "The page is either a cooking recipe, or an 'activity' — something to go do, like a restaurant, hike, travel spot, day trip, class, or local event.",
+    "Read the page content (which may include a lot of unrelated navigation, ads, or comments mixed in), decide which type it is, and extract it into the requested structure.",
+    "If it's a social media caption, the details might be informally written in the caption text itself — do your best to parse structured facts and steps out of prose.",
+    "For an activity, 'steps' means concrete actions to actually go do it (e.g. how to book, what to bring, best order of operations) — not generic advice.",
+    "If the page is genuinely neither a recipe nor a describable activity, set found_content to false, content_type to 'none', and briefly explain what the page is instead.",
+  ].join(" ");
+
+  const response = await getGeminiClient().models.generateContent({
+    model: GEMINI_MODEL,
+    contents: [
+      `Page title: ${page.title || "(none)"}`,
+      `Page description: ${page.description || "(none)"}`,
+      "",
+      "Page content:",
+      page.text || "(no readable text found)",
+    ].join("\n"),
+    config: {
+      systemInstruction,
+      responseMimeType: "application/json",
+      responseJsonSchema: CONTENT_SCHEMA,
     },
-    system: [
-      "You turn a saved social media post or blog page into an actionable plan.",
-      "The page is either a cooking recipe, or an 'activity' — something to go do, like a restaurant, hike, travel spot, day trip, class, or local event.",
-      "Read the page content (which may include a lot of unrelated navigation, ads, or comments mixed in), decide which type it is, and extract it into the requested structure.",
-      "If it's a social media caption, the details might be informally written in the caption text itself — do your best to parse structured facts and steps out of prose.",
-      "For an activity, 'steps' means concrete actions to actually go do it (e.g. how to book, what to bring, best order of operations) — not generic advice.",
-      "If the page is genuinely neither a recipe nor a describable activity, set found_content to false, content_type to 'none', and briefly explain what the page is instead.",
-    ].join(" "),
-    messages: [
-      {
-        role: "user",
-        content: [
-          `Page title: ${page.title || "(none)"}`,
-          `Page description: ${page.description || "(none)"}`,
-          "",
-          "Page content:",
-          page.text || "(no readable text found)",
-        ].join("\n"),
-      },
-    ],
   });
 
-  const textBlock = response.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude did not return any content.");
+  const text = response.text;
+  if (!text) {
+    throw new Error("Gemini did not return any content.");
   }
 
-  const parsed = JSON.parse(textBlock.text) as {
+  const parsed = JSON.parse(text) as {
     found_content: boolean;
     content_type: ContentType | "none";
     title: string;

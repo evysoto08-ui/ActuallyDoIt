@@ -7,9 +7,9 @@ export interface PageContent {
 }
 
 /**
- * Downloads a URL and pulls out plain text so it can be handed to Claude.
+ * Downloads a URL and pulls out plain text so it can be handed to the model.
  * This is intentionally simple (regex-based) rather than a full HTML parser,
- * since Claude only needs readable text, not a DOM.
+ * since the model only needs readable text, not a DOM.
  */
 export async function fetchPageContent(url: string): Promise<PageContent> {
   const controller = new AbortController();

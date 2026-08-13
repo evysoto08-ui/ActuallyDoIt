@@ -88,7 +88,7 @@ export default function Home() {
 
         {loading && (
           <p className="mt-6 text-center text-sm text-neutral-500">
-            Fetching the page and asking Claude to read it&hellip; this can take a few seconds.
+            Fetching the page and asking AI to read it&hellip; this can take a few seconds.
           </p>
         )}
 
